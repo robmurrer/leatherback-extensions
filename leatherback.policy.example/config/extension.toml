@@ -1,0 +1,32 @@
+# Extension configuration file.
+# Visit the "Extension configuration file (extension.toml)" section for more details:
+# https://docs.omniverse.nvidia.com/kit/docs/kit-manual/latest/guide/extensions_advanced.html
+#
+display_name = "Leatherback Policy Based Robot Control Examples"
+
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.1.0"
+title = "leatherback-policy-example"
+description = "Example to run ONNX runtime inference with Leatherback"
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+
+[dependencies]
+"isaacsim.core.api" = {}
+"isaacsim.sensors.physics" = {}
+"isaacsim.core.nodes" = {}
+"isaacsim.storage.native" = {}
+
+# define the Python module that the extension provides
+[[python.module]]
+name = "leatherback.policy.example"
+
+[settings]
+exts."leatherback.policy.example".timeout = 5
+
