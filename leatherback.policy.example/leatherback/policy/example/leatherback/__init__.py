@@ -1,1 +1,2 @@
-from leatherback.policy.example.leatherback.leatherback import *
+# from leatherback.policy.example.leatherback.leatherback import SpotFlatTerrainPolicy
+from .leatherback import SpotFlatTerrainPolicy

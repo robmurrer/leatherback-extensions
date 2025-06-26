@@ -12,20 +12,6 @@ from isaacsim.core.utils.prims import define_prim, get_prim_at_path
 
 from .config_loader import get_articulation_props, get_physics_properties, get_robot_joint_properties, parse_env_config
 
-import io
-from typing import Optional
-
-import carb
-import numpy as np
-import omni
-import torch
-from isaacsim.core.api.controllers.base_controller import BaseController
-from isaacsim.core.prims import SingleArticulation
-from isaacsim.core.utils.prims import define_prim, get_prim_at_path
-
-from .config_loader import get_articulation_props, get_physics_properties, get_robot_joint_properties, parse_env_config
-
-
 class PolicyController(BaseController):
     """
     A controller that loads and executes a policy from a file.

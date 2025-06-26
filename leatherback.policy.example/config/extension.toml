@@ -27,6 +27,3 @@ icon = "data/icon.png"
 [[python.module]]
 name = "leatherback.policy.example"
 
-[settings]
-exts."leatherback.policy.example".timeout = 5
-

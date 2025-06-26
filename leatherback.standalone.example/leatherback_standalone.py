@@ -1,14 +1,41 @@
+# import sys
+# import os
+# import omni.kit.app as app
+
+# parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+# # class_folder_path = os.path.join(parent_dir, 'leatherback.policy.example/leatherback/policy/example')
+# # sys.path.append(class_folder_path)
+# app.get_app().add_extension_path(parent_dir)
+
+# # Enable the custom extension
+# extension_name = "leatherback.policy.example"
+# app.get_app().set_extension_enabled(extension_name, True)
 
 from isaacsim import SimulationApp
 
+# Start the application
 simulation_app = SimulationApp({"headless": False})
+
+# # Get the utility to enable extensions
+from isaacsim.core.utils.extensions import enable_extension
+
+enable_extension("leatherback.policy.example")
+
+# simulation_app.update()
+
+# import omni.kit.app
+# manager = omni.kit.app.get_app().get_extension_manager()
+# print(manager.is_extension_enabled("omni.kit.window.about"))
 
 import carb
 import numpy as np
 import omni.appwindow  # Contains handle to keyboard
 from isaacsim.core.api import World
 from isaacsim.core.utils.prims import define_prim, get_prim_at_path
-from isaacsim.robot.policy.examples.robots import SpotFlatTerrainPolicy
+
+from leatherback.policy.example.leatherback import SpotFlatTerrainPolicy
+# from isaacsim.robot.policy.examples.robots import SpotFlatTerrainPolicy
+
 from isaacsim.storage.native import get_assets_root_path
 
 first_step = True
