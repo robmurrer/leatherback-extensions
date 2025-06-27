@@ -10,22 +10,6 @@ from leatherback.policy.example.controllers import PolicyController
 
 from isaacsim.storage.native import get_assets_root_path
 
-# import carb
-# import omni.ext
-# import omni.kit.app
-
-# class Extension(omni.ext.IExt):
-#     """The Extension class"""
-
-#     def on_startup(self, ext_id):
-#         """Method called when the extension is loaded/enabled"""
-#         carb.log_info(f"on_startup {ext_id}")
-#         ext_path = omni.kit.app.get_app().get_extension_manager().get_extension_path(ext_id)
-
-#     def on_shutdown(self):
-#         """Method called when the extension is disabled"""
-#         carb.log_info(f"on_shutdown")
-
 class SpotFlatTerrainPolicy(PolicyController):
     """The Spot quadruped"""
 
