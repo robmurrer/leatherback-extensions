@@ -45,9 +45,12 @@ class SpotFlatTerrainPolicy(PolicyController):
             assets_root_path + "/Isaac/Samples/Policies/Spot_Policies/spot_env.yaml",
         )
         self._action_scale = 0.2
+        # This is dependent on the Action Space Size
+        # The robot dog has 12 Joints
         self._previous_action = np.zeros(12)
         self._policy_counter = 0
 
+    # This need to be replaced to something similar like the IsaacLab get observations
     def _compute_observation(self, command):
         """
         Compute the observation vector for the policy
@@ -69,6 +72,8 @@ class SpotFlatTerrainPolicy(PolicyController):
         ang_vel_b = np.matmul(R_BI, ang_vel_I)
         gravity_b = np.matmul(R_BI, np.array([0.0, 0.0, -1.0]))
 
+        # there are 48 observations for the flat
+        # there are 235 observations for the rough
         obs = np.zeros(48)
         # Base lin vel
         obs[:3] = lin_vel_b

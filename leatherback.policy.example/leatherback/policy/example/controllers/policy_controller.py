@@ -12,6 +12,9 @@ from isaacsim.core.utils.prims import define_prim, get_prim_at_path
 
 from .config_loader import get_articulation_props, get_physics_properties, get_robot_joint_properties, parse_env_config
 
+# Adding the ONNX runtime
+# import onnxruntime as ort
+
 class PolicyController(BaseController):
     """
     A controller that loads and executes a policy from a file.
@@ -56,12 +59,18 @@ class PolicyController(BaseController):
         Loads a policy from a file.
 
         Args:
-            policy_file_path (str): The path to the policy file.
-            policy_env_path (str): The path to the environment configuration file.
+            policy_file_path (str): The path to the policy file. Example: spot_policy.pt
+            policy_env_path (str): The path to the environment configuration file. Example: spot_env.yaml
         """
         file_content = omni.client.read_file(policy_file_path)[2]
         file = io.BytesIO(memoryview(file_content).tobytes())
+        # Loading a Torch JIT file for Inference
         self.policy = torch.jit.load(file)
+        # region ONNX
+        # Add here an option for ONNX inference
+        # Load ONNX model
+        # self.session = ort.InferenceSession("filename.onnx")
+        # end of region ONNX
         self.policy_env_params = parse_env_config(policy_env_path)
 
         self._decimation, self._dt, self.render_interval = get_physics_properties(self.policy_env_params)
@@ -123,6 +132,7 @@ class PolicyController(BaseController):
         if sleep_threshold not in [None, float("inf")]:
             self.robot.set_sleep_threshold(sleep_threshold)
 
+    # This is general, it is getting the Observations and returning the inference output
     def _compute_action(self, obs: np.ndarray) -> np.ndarray:
         """
         Computes the action from the observation using the loaded policy.
@@ -133,11 +143,15 @@ class PolicyController(BaseController):
         Returns:
             np.ndarray: The action.
         """
+        # region ONNX
+        # Add support to compute actions using the ONNX runtime
+        # end region ONNX
         with torch.no_grad():
             obs = torch.from_numpy(obs).view(1, -1).float()
             action = self.policy(obs).detach().view(-1).numpy()
         return action
 
+    # These are implemented in the leatherback/leatherback.py
     def _compute_observation(self) -> NotImplementedError:
         """
         Computes the observation. Not implemented.
@@ -147,6 +161,7 @@ class PolicyController(BaseController):
             "Compute observation need to be implemented, expects np.ndarray in the structure specified by env yaml"
         )
 
+    # These are implemented in the leatherback/leatherback.py
     def forward(self) -> NotImplementedError:
         """
         Forwards the controller. Not implemented.
@@ -160,3 +175,10 @@ class PolicyController(BaseController):
         Called after the controller is reset.
         """
         self.robot.post_reset()
+
+    # # Create an ONNX Runtime session with the provided model
+    # def create_session(model: str) -> onnxruntime.InferenceSession:
+    #     providers = ['CPUExecutionProvider']
+    #     if torch.cuda.is_available():
+    #         providers.insert(0, 'CUDAExecutionProvider')
+    #     return onnxruntime.InferenceSession(model, providers=providers)

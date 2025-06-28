@@ -7,6 +7,8 @@ import carb
 import omni
 import yaml
 
+# region Change
+# Double check, but this should be fine if its just parsing the YAML to a dict
 def parse_env_config(env_config_path: str = "env.yaml") -> dict:
     """
     Parses the environment configuration file.
@@ -34,7 +36,7 @@ def parse_env_config(env_config_path: str = "env.yaml") -> dict:
     data = yaml.load(file, Loader=SafeLoaderIgnoreUnknown)
     return data
 
-
+# region Change
 def get_robot_joint_properties(
     data: dict, joint_names: List[str]
 ) -> Tuple[List[float], List[float], List[float], List[float], List[float], List[float]]:
@@ -192,7 +194,8 @@ def get_robot_joint_properties(
         default_vel_inorder,
     )
 
-
+# region Change
+# THIS NEED CHANGE
 def get_articulation_props(data: dict) -> dict:
     """
     Gets the articulation properties from the environment configuration data.
@@ -205,7 +208,7 @@ def get_articulation_props(data: dict) -> dict:
     """
     return data.get("scene").get("robot").get("spawn").get("articulation_props")
 
-
+# region Change
 def get_physics_properties(data: dict) -> dict:
     """
     Gets the physics properties from the environment configuration data.

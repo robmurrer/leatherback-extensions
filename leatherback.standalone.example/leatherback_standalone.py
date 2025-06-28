@@ -62,6 +62,7 @@ my_world.reset()
 my_world.add_physics_callback("physics_step", callback_fn=on_physics_step)
 
 # robot command
+# this is a command in X, Y and Rotation in Z sent to the robot
 base_command = np.zeros(3)
 
 i = 0
