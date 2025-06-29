@@ -19,6 +19,7 @@ class SpotFlatTerrainPolicy(PolicyController):
         root_path: Optional[str] = None,
         name: str = "spot",
         usd_path: Optional[str] = None,
+        policy_path: Optional[str] = None,
         position: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
     ) -> None:
@@ -30,6 +31,7 @@ class SpotFlatTerrainPolicy(PolicyController):
             root_path (Optional[str]): The path to the articulation root of the robot
             name (str) -- name of the quadruped
             usd_path (str) -- robot usd filepath in the directory
+            policy_path (str) -- 
             position (np.ndarray) -- position of the robot
             orientation (np.ndarray) -- orientation of the robot
 
@@ -37,13 +39,20 @@ class SpotFlatTerrainPolicy(PolicyController):
         assets_root_path = get_assets_root_path()
         if usd_path == None:
             usd_path = assets_root_path + "/Isaac/Robots/BostonDynamics/spot/spot.usd"
+        
 
-        super().__init__(name, prim_path, root_path, usd_path, position, orientation)
-
-        self.load_policy(
-            assets_root_path + "/Isaac/Samples/Policies/Spot_Policies/spot_policy.pt",
-            assets_root_path + "/Isaac/Samples/Policies/Spot_Policies/spot_env.yaml",
-        )
+        super().__init__(name, prim_path, root_path, usd_path, policy_path, position, orientation)
+        if policy_path == None:
+            self.load_policy(
+                assets_root_path + "/Isaac/Samples/Policies/Spot_Policies/spot_policy.pt",
+                assets_root_path + "/Isaac/Samples/Policies/Spot_Policies/spot_env.yaml",
+            )
+        else:
+            self.load_policy(
+                    policy_path + "/policy.onnx", # policy_path + "/spot_policy.pt",
+                    policy_path + "/env.yaml",  # policy_path + "/spot_env.yaml",
+                ) 
+    
         self._action_scale = 0.2
         # This is dependent on the Action Space Size
         # The robot dog has 12 Joints

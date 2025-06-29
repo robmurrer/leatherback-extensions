@@ -13,7 +13,8 @@ from isaacsim.core.utils.prims import define_prim, get_prim_at_path
 from .config_loader import get_articulation_props, get_physics_properties, get_robot_joint_properties, parse_env_config
 
 # Adding the ONNX runtime
-# import onnxruntime as ort
+import os
+import onnxruntime as ort
 
 class PolicyController(BaseController):
     """
@@ -37,6 +38,7 @@ class PolicyController(BaseController):
         prim_path: str,
         root_path: Optional[str] = None,
         usd_path: Optional[str] = None,
+        policy_path: Optional[str] = None,
         position: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
     ) -> None:
@@ -62,14 +64,21 @@ class PolicyController(BaseController):
             policy_file_path (str): The path to the policy file. Example: spot_policy.pt
             policy_env_path (str): The path to the environment configuration file. Example: spot_env.yaml
         """
-        file_content = omni.client.read_file(policy_file_path)[2]
-        file = io.BytesIO(memoryview(file_content).tobytes())
-        # Loading a Torch JIT file for Inference
-        self.policy = torch.jit.load(file)
+        if policy_file_path.endswith('.pt') or policy_file_path.endswith('.pth'):
+            file_content = omni.client.read_file(policy_file_path)[2]
+            file = io.BytesIO(memoryview(file_content).tobytes())
+            # Loading a Torch JIT file for Inference
+            self.policy = torch.jit.load(file)
+            self._isJIT = 1
         # region ONNX
         # Add here an option for ONNX inference
-        # Load ONNX model
-        # self.session = ort.InferenceSession("filename.onnx")
+        elif policy_file_path.endswith('.onnx'):
+            # Unnecessary Byte stream for now
+            file_content = omni.client.read_file(policy_file_path)[2]
+            file = io.BytesIO(memoryview(file_content).tobytes())
+            # Load ONNX model 
+            self.session = ort.InferenceSession(policy_file_path)
+            self._isJIT = 0
         # end of region ONNX
         self.policy_env_params = parse_env_config(policy_env_path)
 
@@ -143,12 +152,23 @@ class PolicyController(BaseController):
         Returns:
             np.ndarray: The action.
         """
+        if self._isJIT == 1:
+            with torch.no_grad():
+                obs = torch.from_numpy(obs).view(1, -1).float()
+                action = self.policy(obs).detach().view(-1).numpy()
         # region ONNX
-        # Add support to compute actions using the ONNX runtime
+        # Add support to compute actions using the ONNX runtime   
+        # Need to fix the Tensor giving output and input need o match     
+        elif self._isJIT == 0:
+            # Prepare inputs assuming input_tensor is a single input
+            obs = torch.from_numpy(obs).view(1, -1).float() # seems reduntant but I thought I had to mess with data types so left here
+            ort_inputs = {self.session.get_inputs()[0].name: obs.numpy()}
+            output_names = [output.name for output in self.session.get_outputs()]
+            outputs = self.session.run(output_names, ort_inputs)
+            # Get output and flatten to 1D array like .view(-1).numpy()
+            action = outputs[0].reshape(-1)
         # end region ONNX
-        with torch.no_grad():
-            obs = torch.from_numpy(obs).view(1, -1).float()
-            action = self.policy(obs).detach().view(-1).numpy()
+        
         return action
 
     # These are implemented in the leatherback/leatherback.py
@@ -176,6 +196,8 @@ class PolicyController(BaseController):
         """
         self.robot.post_reset()
 
+# TODO
+# Experiment with bindings, iostreams and better logic for the ONNX vs JIT
     # # Create an ONNX Runtime session with the provided model
     # def create_session(model: str) -> onnxruntime.InferenceSession:
     #     providers = ['CPUExecutionProvider']

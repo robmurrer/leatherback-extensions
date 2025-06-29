@@ -23,6 +23,11 @@ from leatherback.policy.example.leatherback import SpotFlatTerrainPolicy
 
 from isaacsim.storage.native import get_assets_root_path
 
+import os
+script_dir = os.path.dirname(__file__)
+relative_path = os.path.join("..", "spot_onnx")
+full_path = os.path.abspath(os.path.join(script_dir, relative_path))
+
 first_step = True
 reset_needed = False
 
@@ -53,9 +58,22 @@ asset_path = assets_root_path + "/Isaac/Environments/Grid/default_environment.us
 prim.GetReferences().AddReference(asset_path)
 
 # spawn robot
+"""
+Initialize robot and load RL policy.
+
+Args:
+    prim_path (str) -- prim path of the robot on the stage
+    root_path (Optional[str]): The path to the articulation root of the robot
+    name (str) -- name of the quadruped
+    usd_path (str) -- robot usd filepath in the directory if none it gets from Nucleus
+    position (np.ndarray) -- position of the robot
+    orientation (np.ndarray) -- orientation of the robot
+
+"""
 spot = SpotFlatTerrainPolicy(
     prim_path="/World/Spot",
     name="Spot",
+    policy_path = full_path,
     position=np.array([0, 0, 0.8]),
 )
 my_world.reset()
