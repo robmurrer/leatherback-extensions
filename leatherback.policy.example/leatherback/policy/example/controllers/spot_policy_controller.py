@@ -12,13 +12,13 @@ from isaacsim.core.utils.prims import define_prim, get_prim_at_path
 
 # must experiment with the config_loader - general vs bespoke
 # if general must add a way to configure it through the python API
-from .config_loader import get_articulation_props, get_physics_properties, get_robot_joint_properties, parse_env_config
+from .spot_config_loader import get_articulation_props, get_physics_properties, get_robot_joint_properties, parse_env_config
 
 # Adding the ONNX runtime
 import os
 import onnxruntime as ort
 
-class PolicyController(BaseController):
+class SpotPolicyController(BaseController):
     """
     A controller that loads and executes a policy from a file.
 

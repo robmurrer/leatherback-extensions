@@ -27,6 +27,7 @@ import os
 script_dir = os.path.dirname(__file__)
 relative_path = os.path.join("..", "spot_onnx")
 full_path = os.path.abspath(os.path.join(script_dir, relative_path))
+usd_path = os.path.abspath(os.path.join(full_path, "spot.usd"))
 
 first_step = True
 reset_needed = False
@@ -73,6 +74,7 @@ Args:
 spot = SpotFlatTerrainPolicy(
     prim_path="/World/Spot",
     name="Spot",
+    usd_path = usd_path,
     policy_path = full_path,
     position=np.array([0, 0, 0.8]),
 )

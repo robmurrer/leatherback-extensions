@@ -17,7 +17,7 @@ import omni.appwindow  # Contains handle to keyboard
 from isaacsim.core.api import World
 from isaacsim.core.utils.prims import define_prim, get_prim_at_path
 
-from leatherback.policy.example.leatherback import SpotFlatTerrainPolicy
+from leatherback.policy.example.leatherback import LeatherbackPolicy
 # the reference extension
 # from isaacsim.robot.policy.examples.robots import SpotFlatTerrainPolicy
 

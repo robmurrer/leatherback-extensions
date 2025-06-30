@@ -6,11 +6,12 @@ import omni.kit.commands
 from isaacsim.core.utils.rotations import quat_to_rot_matrix
 from isaacsim.core.utils.types import ArticulationAction
 
+# must experiment with the policy controller - general vs bespoke
 from leatherback.policy.example.controllers import PolicyController
 
 from isaacsim.storage.native import get_assets_root_path
 
-class SpotFlatTerrainPolicy(PolicyController):
+class LeatherbackPolicy(PolicyController):
     """The Spot quadruped"""
 
     def __init__(
