@@ -25,8 +25,9 @@ from isaacsim.storage.native import get_assets_root_path
 
 import os
 script_dir = os.path.dirname(__file__)
-relative_path = os.path.join("..", "spot_onnx")
+relative_path = os.path.join("..", "leatherback")
 full_path = os.path.abspath(os.path.join(script_dir, relative_path))
+usd_path = os.path.abspath(os.path.join(full_path, "leatherback_simple_better.usd"))
 
 first_step = True
 reset_needed = False
@@ -70,17 +71,18 @@ Args:
     orientation (np.ndarray) -- orientation of the robot
 
 """
-spot = SpotFlatTerrainPolicy(
-    prim_path="/World/Spot",
-    name="Spot",
+spot = LeatherbackPolicy(
+    prim_path="/World/leatherback",
+    name="leatherback",
     policy_path = full_path,
+    usd_path = usd_path,
     position=np.array([0, 0, 0.8]),
 )
 my_world.reset()
 my_world.add_physics_callback("physics_step", callback_fn=on_physics_step)
 
 # robot command
-# this is a command in X, Y and Rotation in Z sent to the robot
+# The position of the waypoint in X , Y , Z
 base_command = np.zeros(3)
 
 i = 0
@@ -89,15 +91,16 @@ while simulation_app.is_running():
     if my_world.is_stopped():
         reset_needed = True
     if my_world.is_playing():
+        # The idea is to drive in a triangle
         if i >= 0 and i < 80:
-            # forward
-            base_command = np.array([2, 0, 0])
+            # X1
+            base_command = np.array([4, 0, 0])
         elif i >= 80 and i < 130:
-            # rotate
-            base_command = np.array([1, 0, 2])
+            # X2
+            base_command = np.array([2, 4, 0])
         elif i >= 130 and i < 200:
-            # side ways
-            base_command = np.array([0, 1, 0])
+            # X3
+            base_command = np.array([0, 0, 0])
         elif i == 200:
             i = 0
         i += 1

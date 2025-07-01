@@ -8,6 +8,7 @@ import omni
 import yaml
 
 # config_loader - either make the code general or make it unique per robot
+# looking to change these in particular get_articulation_props, get_physics_properties, get_robot_joint_properties, parse_env_config
 
 # region Change
 # Double check, but this should be fine if its just parsing the YAML to a dict
@@ -52,7 +53,11 @@ def get_robot_joint_properties(
     Returns:
         tuple: A tuple containing the effort limits, velocity limits, stiffness, damping, default positions, and default velocities.
     """
-    actuator_data = data.get("scene").get("robot").get("actuators")
+    # region actuators
+    # should be robot_cfg - actuators
+    # actuator_data = data.get("scene").get("robot").get("actuators")
+    actuator_data = data.get("robot_cfg").get("actuators")
+
     stiffness = {}
     damping = {}
     effort_limits = {}
@@ -112,7 +117,10 @@ def get_robot_joint_properties(
             carb.log_error(f"Failed to parse damping, expected float, int, or dict, got: {type(joint_damping)}")
 
     # parse default joint position
-    init_joint_pos = data.get("scene").get("robot").get("init_state").get("joint_pos")
+    # region joint_pos
+    # robot_cfg - init_state - joint_pos
+    # init_joint_pos = data.get("scene").get("robot").get("init_state").get("joint_pos")
+    init_joint_pos = data.get("robot_cfg").get("init_state").get("joint_pos")
     if isinstance(init_joint_pos, (float, int)):
         for names in joint_names_expr:
             default_pos[names] = float(init_joint_pos)
@@ -123,8 +131,11 @@ def get_robot_joint_properties(
             f"Failed to parse init state joint position, expected float, int, or dict, got: {type(init_joint_pos)}"
         )
 
+    # region joint_vel
     # parse default joint velocity
-    init_joint_vel = data.get("scene").get("robot").get("init_state").get("joint_vel")
+    # robot_cfg - init_state - joint_vel
+    # init_joint_vel = data.get("scene").get("robot").get("init_state").get("joint_vel")
+    init_joint_vel = data.get("robot_cfg").get("init_state").get("joint_vel")
     if isinstance(init_joint_vel, (float, int)):
         for names in joint_names_expr:
             default_vel[names] = float(init_joint_vel)
@@ -208,9 +219,11 @@ def get_articulation_props(data: dict) -> dict:
     Returns:
         dict: The articulation properties.
     """
-    return data.get("scene").get("robot").get("spawn").get("articulation_props")
+    # should be robot_cfg - spawn - articulation_props
+    # return data.get("scene").get("robot").get("spawn").get("articulation_props")
+    return data.get("robot_cfg").get("spawn").get("articulation_props")
+# end region Change
 
-# region Change
 def get_physics_properties(data: dict) -> dict:
     """
     Gets the physics properties from the environment configuration data.
@@ -221,8 +234,8 @@ def get_physics_properties(data: dict) -> dict:
     Returns:
         tuple: A tuple containing the decimation, dt, and render interval.
     """
+    # decimation , sim - dt , sim - render_interval
     return data.get("decimation"), data.get("sim").get("dt"), data.get("sim").get("render_interval")
-
 
 def get_observations(data: dict) -> dict:
     """

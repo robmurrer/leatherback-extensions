@@ -39,25 +39,28 @@ class LeatherbackPolicy(PolicyController):
         """
         assets_root_path = get_assets_root_path()
         if usd_path == None:
-            usd_path = assets_root_path + "/Isaac/Robots/BostonDynamics/spot/spot.usd"
+            # Later might be able to add an Asset to show it doesnt exist - easter egg
+            # usd_path = assets_root_path + "/Isaac/Robots/BostonDynamics/spot/spot.usd"
+            print("File not found")
         
 
         super().__init__(name, prim_path, root_path, usd_path, policy_path, position, orientation)
         if policy_path == None:
-            self.load_policy(
-                assets_root_path + "/Isaac/Samples/Policies/Spot_Policies/spot_policy.pt",
-                assets_root_path + "/Isaac/Samples/Policies/Spot_Policies/spot_env.yaml",
-            )
+            # self.load_policy(
+            #     assets_root_path + "/Isaac/Samples/Policies/Spot_Policies/spot_policy.pt",
+            #     assets_root_path + "/Isaac/Samples/Policies/Spot_Policies/spot_env.yaml",
+            # )
+            print("Policy not found")
         else:
             self.load_policy(
-                    policy_path + "/policy.onnx", # policy_path + "/spot_policy.pt",
+                    policy_path + "/policy_agent.onnx", # policy_path + "/spot_policy.pt",
                     policy_path + "/env.yaml",  # policy_path + "/spot_env.yaml",
                 ) 
     
         self._action_scale = 0.2
         # This is dependent on the Action Space Size
-        # The robot dog has 12 Joints
-        self._previous_action = np.zeros(12)
+        # Leatherback has actions space = 2
+        self._previous_action = np.zeros(2)
         self._policy_counter = 0
 
     # This need to be replaced to something similar like the IsaacLab get observations
@@ -82,9 +85,9 @@ class LeatherbackPolicy(PolicyController):
         ang_vel_b = np.matmul(R_BI, ang_vel_I)
         gravity_b = np.matmul(R_BI, np.array([0.0, 0.0, -1.0]))
 
-        # there are 48 observations for the flat
-        # there are 235 observations for the rough
-        obs = np.zeros(48)
+        # The order of observations matter
+        # leatherback has 8 observations
+        obs = np.zeros(8)
         # Base lin vel
         obs[:3] = lin_vel_b
         # Base ang vel
