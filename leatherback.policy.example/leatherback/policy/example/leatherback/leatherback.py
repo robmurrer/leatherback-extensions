@@ -63,18 +63,30 @@ class LeatherbackPolicy(PolicyController):
         self._previous_action = np.zeros(2)
         self._policy_counter = 0
 
+    # region Observation
     # This need to be replaced to something similar like the IsaacLab get observations
     def _compute_observation(self, command):
         """
         Compute the observation vector for the policy
 
         Argument:
-        command (np.ndarray) -- the robot command (v_x, v_y, w_z)
+        command (np.ndarray) -- the waypoint goal (x, y, z)
 
         Returns:
         np.ndarray -- The observation vector.
 
+        position error
+        heading error cosine
+        heading error sine
+        root_lin_vel_b[:, 0]
+        root_lin_vel_b[:, 1]
+        root_ang_vel_w[:, 2]
+        _throttle_state
+        _steering_state
+
         """
+        # this is using the articulation type 
+        # from isaacsim.core.prims import SingleArticulation
         lin_vel_I = self.robot.get_linear_velocity()
         ang_vel_I = self.robot.get_angular_velocity()
         pos_IB, q_IB = self.robot.get_world_pose()
