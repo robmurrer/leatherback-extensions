@@ -56,6 +56,7 @@ if assets_root_path is None:
 # spawn warehouse scene
 prim = define_prim("/World/Ground", "Xform")
 asset_path = assets_root_path + "/Isaac/Environments/Grid/default_environment.usd"
+# asset_path = assets_root_path + "/Isaac/Environments/Simple_Warehouse/warehouse.usd"
 prim.GetReferences().AddReference(asset_path)
 
 # spawn robot
