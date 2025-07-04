@@ -246,9 +246,10 @@ class LeatherbackPolicy(PolicyController):
         if self._policy_counter % self._decimation == 0:
             obs = self._compute_observation(command)
             self.action = self._compute_action(obs)
+            self.repeated_arr = np.repeat(self.action, [4, 2])
             self._previous_action = self.action.copy()
         # ValueError: operands could not be broadcast together with shapes (6,) (2,)
-        action = ArticulationAction(joint_positions=self.default_pos + (self.action * self._action_scale))
+        action = ArticulationAction(joint_positions=self.default_pos + (self.repeated_arr * self._action_scale))
         self.robot.apply_action(action)
 
         self._policy_counter += 1
