@@ -247,7 +247,7 @@ class LeatherbackPolicy(PolicyController):
             obs = self._compute_observation(command)
             self.action = self._compute_action(obs)
             self._previous_action = self.action.copy()
-
+        # ValueError: operands could not be broadcast together with shapes (6,) (2,)
         action = ArticulationAction(joint_positions=self.default_pos + (self.action * self._action_scale))
         self.robot.apply_action(action)
 
