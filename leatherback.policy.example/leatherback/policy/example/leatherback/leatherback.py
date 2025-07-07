@@ -57,7 +57,7 @@ class LeatherbackPolicy(PolicyController):
                     policy_path + "/env.yaml",  # policy_path + "/spot_env.yaml",
                 ) 
     
-        self._action_scale = 0.2
+        self._action_scale = 1 # 0.2
         # This is dependent on the Action Space Size
         # Leatherback has actions space = 2
         self._previous_action = np.zeros(2)
@@ -249,7 +249,24 @@ class LeatherbackPolicy(PolicyController):
             self.repeated_arr = np.repeat(self.action, [4, 2])
             self._previous_action = self.action.copy()
         # ValueError: operands could not be broadcast together with shapes (6,) (2,)
-        action = ArticulationAction(joint_positions=self.default_pos + (self.repeated_arr * self._action_scale))
+        # [Warning] [omni.kit.notification_manager.manager] PhysX error: PxArticulationJointReducedCoordinate::setDriveTarget() only supports target angle in range [-2Pi, 2Pi] for joints of type PxArticulationJointType::eREVOLUTE
+        # action = ArticulationAction(joint_positions=self.default_pos + (self.repeated_arr * self._action_scale))
+
+        action = ArticulationAction(
+            joint_velocities=(
+                # self.wheel_rotation_velocity_FL,
+                # self.wheel_rotation_velocity_FR,
+                # self.wheel_rotation_velocity_BL,
+                # self.wheel_rotation_velocity_BR,
+                self.repeated_arr[:4],
+            ),
+            joint_positions=(
+                # self.left_wheel_angle, 
+                # self.right_wheel_angle,
+                self.repeated_arr[-2:],
+                ),
+        )
+
         self.robot.apply_action(action)
 
         self._policy_counter += 1

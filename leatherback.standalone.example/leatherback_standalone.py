@@ -76,7 +76,7 @@ spot = LeatherbackPolicy(
     name="leatherback",
     policy_path = full_path,
     usd_path = usd_path,
-    position=np.array([0, 0, 0.8]),
+    position=np.array([0, 0, 0.05]),
 )
 my_world.reset()
 my_world.add_physics_callback("physics_step", callback_fn=on_physics_step)

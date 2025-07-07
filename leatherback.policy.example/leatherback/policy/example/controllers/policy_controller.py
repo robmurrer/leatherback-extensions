@@ -18,6 +18,8 @@ from .config_loader import get_articulation_props, get_physics_properties, get_r
 import os
 import onnxruntime as ort
 
+# NOTE: May be best to inherit the AckermannController and add the necessary logic to run the Policy
+
 class PolicyController(BaseController):
     """
     A controller that loads and executes a policy from a file.
