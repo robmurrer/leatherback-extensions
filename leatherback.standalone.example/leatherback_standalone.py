@@ -37,7 +37,8 @@ def on_physics_step(step_size) -> None:
     global first_step
     global reset_needed
     if first_step:
-        spot.initialize()
+        # spot.initialize()
+        spot.robot.initialize()
         first_step = False
     elif reset_needed:
         my_world.reset(True)

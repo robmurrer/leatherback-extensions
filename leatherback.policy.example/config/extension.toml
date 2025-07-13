@@ -22,6 +22,8 @@ icon = "data/icon.png"
 "isaacsim.sensors.physics" = {}
 "isaacsim.core.nodes" = {}
 "isaacsim.storage.native" = {}
+"isaacsim.robot.wheeled_robots" = {}
+"isaacsim.core.utils" = {}
 
 # define the Python module that the extension provides
 [[python.module]]

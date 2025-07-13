@@ -10,6 +10,9 @@ import yaml
 # config_loader - either make the code general or make it unique per robot
 # looking to change these in particular get_articulation_props, get_physics_properties, get_robot_joint_properties, parse_env_config
 
+# add functionality to get the throttle_dof_name: and steering_dof_name: from the YAML
+
+
 # region Change
 # Double check, but this should be fine if its just parsing the YAML to a dict
 def parse_env_config(env_config_path: str = "env.yaml") -> dict:

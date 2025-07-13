@@ -8,9 +8,9 @@ By no means this is a stable extension project but it can serve as a great refer
 
 ## Installation
 
-Step 1 - Go to the isaacsim root installation, (a.k.a where the python.sh is)
+**Step 1** - Go to the isaacsim root installation, (a.k.a where the python.sh is)
 
-Step 2 - Add the extension path to the ```setup_python_env.sh```
+**Step 2**- Add the extension path to the ```setup_python_env.sh```
 
 At the very end of the script for the following line 
 
@@ -26,7 +26,7 @@ add the path to your awesome extension, as example:
 
 This is important so the extension manager can locate the extension.
 
-Step 3 - Install the dependencies
+**Step 3** - Install the dependencies
 
 IsaacSim has its own python binaries so you must install dependencies like onnxruntime and onnx.
 
@@ -101,3 +101,58 @@ controller = DifferentialController(name="simple_control", wheel_radius=0.035, w
 jetbot.apply_wheel_actions(controller.forward(throttle, steering))
 ```
 
+The ackermann example found at https://docs.isaacsim.omniverse.nvidia.com/4.5.0/robot_simulation/mobile_robot_controllers.html#ackermann-controller
+
+```python
+from isaacsim.robot.wheeled_robots.controllers.ackermann_controller import AckermannController
+from leatherback.policy.example.ackermann_robot import AckermannRobot
+
+robot_prim_path = "/World/Leatherback"
+robot = AckermannRobot(prim_path=robot_prim_path,
+                        name="leatherback",
+                        wheel_dof_names=[
+                              "Wheel_Upright_Rear_Right", 
+                              "Wheel_Upright_Rear_Left",
+                              "Knuckle_Upright_Front_Right",
+                              "Knuckle_Upright_Front_Left",
+                              "Wheel_Knuckle_Front_Right",
+                              "Wheel_Knuckle_Front_Left",
+                        ]
+                      )
+
+wheel_base = 1.65
+track_width = 1.25
+wheel_radius = 0.25
+desired_forward_vel = 1.1  # rad/s
+desired_steering_angle = 0.1  # rad
+
+# Setting acceleration, steering velocity, and dt to 0 to instantly reach the target steering and velocity
+acceleration = 0.0  # m/s^2
+steering_velocity = 0.0  # rad/s
+dt = 0.0  # secs
+
+controller = AckermannController(
+   "test_controller", wheel_base=wheel_base, track_width=track_width, front_wheel_radius=wheel_radius
+)
+
+actions = controller.forward(
+      [desired_steering_angle, steering_velocity, desired_forward_vel, acceleration, dt]
+)
+
+robot.apply_wheel_actions(actions)
+```
+
+Could use the config_loader.py to parse the joint names and their properties as they are located in the env.yaml
+
+```yaml
+throttle_dof_name:
+- Wheel__Knuckle__Front_Left
+- Wheel__Knuckle__Front_Right
+- Wheel__Upright__Rear_Right
+- Wheel__Upright__Rear_Left
+steering_dof_name:
+- Knuckle__Upright__Front_Right
+- Knuckle__Upright__Front_Left
+```
+
+Must design an interface class for the Articulation

@@ -13,7 +13,23 @@ from isaacsim.storage.native import get_assets_root_path
 
 class LeatherbackPolicy(PolicyController):
     """The Spot quadruped"""
-
+        # self,
+        # name: str,
+        # prim_path: str,
+        # root_path: Optional[str] = None,
+        # usd_path: Optional[str] = None,
+        # policy_path: Optional[str] = None,
+        # position: Optional[np.ndarray] = None,
+        # orientation: Optional[np.ndarray] = None,
+        # wheel_base: float = 32,
+        # track_width: float = 24,
+        # front_wheel_radius: float = 0.052,
+        # back_wheel_radius: float = 0.052,
+        # max_wheel_velocity: float = 20.0,
+        # invert_steering: bool = False,
+        # max_wheel_rotation_angle: float = 0.7854,
+        # max_acceleration: float = 1.0,
+        # max_steering_angle_velocity: float = 1.0,
     def __init__(
         self,
         prim_path: str,
@@ -23,6 +39,15 @@ class LeatherbackPolicy(PolicyController):
         policy_path: Optional[str] = None,
         position: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
+        # wheel_base: float = 32,
+        # track_width: float = 24,
+        # front_wheel_radius: float = 0.052,
+        # back_wheel_radius: float = 0.052,
+        # max_wheel_velocity: float = 20.0,
+        # invert_steering: bool = False,
+        # max_wheel_rotation_angle: float = 0.7854,
+        # max_acceleration: float = 1.0,
+        # max_steering_angle_velocity: float = 1.0,
     ) -> None:
         """
         Initialize robot and load RL policy.
@@ -43,8 +68,10 @@ class LeatherbackPolicy(PolicyController):
             # usd_path = assets_root_path + "/Isaac/Robots/BostonDynamics/spot/spot.usd"
             print("File not found")
         
-
         super().__init__(name, prim_path, root_path, usd_path, policy_path, position, orientation)
+        # super().__init__(name, prim_path, root_path, usd_path, policy_path, position, orientation, 
+        #                  wheel_base, track_width, front_wheel_radius, back_wheel_radius, max_wheel_velocity, invert_steering, max_wheel_rotation_angle, max_acceleration, max_steering_angle_velocity)
+        # PolicyController.__init__(name, prim_path, root_path, usd_path, policy_path, position, orientation)
         if policy_path == None:
             # self.load_policy(
             #     assets_root_path + "/Isaac/Samples/Policies/Spot_Policies/spot_policy.pt",
@@ -59,7 +86,7 @@ class LeatherbackPolicy(PolicyController):
     
         self._action_scale = 1 # 0.2
         # This is dependent on the Action Space Size
-        # Leatherback has actions space = 2
+        # Leatherback has action space = 2
         self._previous_action = np.zeros(2)
         self._policy_counter = 0
 
@@ -245,28 +272,38 @@ class LeatherbackPolicy(PolicyController):
         """
         if self._policy_counter % self._decimation == 0:
             obs = self._compute_observation(command)
-            self.action = self._compute_action(obs)
+            self.action, self.actions = self._compute_action(obs)
             self.repeated_arr = np.repeat(self.action, [4, 2])
             self._previous_action = self.action.copy()
         # ValueError: operands could not be broadcast together with shapes (6,) (2,)
         # [Warning] [omni.kit.notification_manager.manager] PhysX error: PxArticulationJointReducedCoordinate::setDriveTarget() only supports target angle in range [-2Pi, 2Pi] for joints of type PxArticulationJointType::eREVOLUTE
         # action = ArticulationAction(joint_positions=self.default_pos + (self.repeated_arr * self._action_scale))
 
-        action = ArticulationAction(
-            joint_velocities=(
-                # self.wheel_rotation_velocity_FL,
-                # self.wheel_rotation_velocity_FR,
-                # self.wheel_rotation_velocity_BL,
-                # self.wheel_rotation_velocity_BR,
-                self.repeated_arr[:4],
-            ),
-            joint_positions=(
-                # self.left_wheel_angle, 
-                # self.right_wheel_angle,
-                self.repeated_arr[-2:],
-                ),
-        )
+        # action = ArticulationAction(
+        #     joint_velocities=(
+        #         # self.wheel_rotation_velocity_FL,
+        #         # self.wheel_rotation_velocity_FR,
+        #         # self.wheel_rotation_velocity_BL,
+        #         # self.wheel_rotation_velocity_BR,
+        #         self.repeated_arr[:4],
+        #     ),
+        #     joint_positions=(
+        #         # self.left_wheel_angle, 
+        #         # self.right_wheel_angle,
+        #         self.repeated_arr[-2:],
+        #         ),
+        # )
 
-        self.robot.apply_action(action)
+        # action = ArticulationAction(joint_velocities = self.actions.joint_velocities, joint_positions = self.actions.joint_positions)
+        # self.robot.apply_action(action)
+        """Calculate right and left wheel angles and angular velocity of each wheel given steering angle and desired forward velocity.
+
+        Args:
+            command (np.ndarray): [desired steering angle (rad), steering_angle_velocity (rad/s), desired velocity of robot (m/s), acceleration (m/s^2), delta time (s)]
+
+        Returns:
+           self.actions = ArticulationAction: joint_velocities = [front left wheel, front right wheel, back left wheel, back right wheel]; joint_positions = [left wheel angle, right wheel angle]
+        """
+        self.robot.apply_wheel_actions(self.actions)
 
         self._policy_counter += 1
