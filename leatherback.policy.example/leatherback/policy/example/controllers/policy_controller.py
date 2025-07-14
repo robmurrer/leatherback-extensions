@@ -116,6 +116,7 @@ class PolicyController(BaseController):
             self.robot = AckermannRobot(
                             prim_path=prim_path,
                             name=name,
+                            position=position,
                             throttle_dof_names=[
                                 "Wheel__Knuckle__Front_Left", 
                                 "Wheel__Knuckle__Front_Right",
@@ -132,6 +133,7 @@ class PolicyController(BaseController):
             self.robot = AckermannRobot(
                             prim_path=root_path,
                             name=name,
+                            position=position,
                             throttle_dof_names=[
                                 "Wheel__Knuckle__Front_Left", 
                                 "Wheel__Knuckle__Front_Right",
@@ -212,16 +214,24 @@ class PolicyController(BaseController):
         acceleration = 0.0  # m/s^2
         steering_velocity = 0.0  # rad/s
         dt = 0.0  # secs
-        desired_forward_vel = action[0]
-        desired_steering_angle = action[1]
+        """Multiplier for the throttle velocity. The action is in the range [-1, 1] and the radius of the wheel is 0.06m"""
+        throttle_scale = 1 # when set to 2 it trains but the cars are flying, 3 you get NaNs
+        throttle_max = 50.0 # throttle_max = 60.0
+        """Multiplier for the steering position. The action is in the range [-1, 1]"""
+        steering_scale = 0.1 # steering_scale = math.pi / 4.0
+        steering_max = 0.75
+        _throttle = np.clip(action[0]*throttle_scale, -throttle_max, throttle_max*0.1)
+        _steering = np.clip(action[1]*steering_scale, -steering_max, steering_max)
+        desired_forward_vel = _throttle # action[0]
+        desired_steering_angle = _steering  # action[1]
         actions = self.controller.forward([desired_steering_angle, steering_velocity, desired_forward_vel, acceleration, dt])
         # Seems to have numerical stability issues with the model
         # action = [ throttle, steering ]
-        print(action)
+        # print(action)
         # [ 1.5507218e+38 -9.5658446e+37]
         # [-1.0059319e+38 -3.7394159e+37] 
         # [ 1.8587413e+38 -1.1465905e+38]
-        print(actions) 
+        # print(actions) 
         # {'joint_positions': (-0.6287975571457335, -0.7854), 'joint_velocities': (20.0, 20.0, 20.0, 12.499972450911129), 'joint_efforts': None}
         # {'joint_positions': (-0.6287975571457335, -0.7854), 'joint_velocities': (-20.0, -20.0, -20.0, -12.499972450911129), 'joint_efforts': None}
         # {'joint_positions': (-0.6287975571457335, -0.7854), 'joint_velocities': (20.0, 20.0, 20.0, 12.499972450911129), 'joint_efforts': None}

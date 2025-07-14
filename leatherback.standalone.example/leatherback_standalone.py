@@ -45,7 +45,9 @@ def on_physics_step(step_size) -> None:
         reset_needed = False
         first_step = True
     else:
+        # print(base_command)
         spot.forward(step_size, base_command)
+        # spot.forward(step_size, np.zeros(3))
 
 
 # spawn world
@@ -77,7 +79,7 @@ spot = LeatherbackPolicy(
     name="leatherback",
     policy_path = full_path,
     usd_path = usd_path,
-    position=np.array([0, 0, 0.05]),
+    position=np.array([-1, 0, 0.05]),
 )
 my_world.reset()
 my_world.add_physics_callback("physics_step", callback_fn=on_physics_step)
@@ -93,16 +95,16 @@ while simulation_app.is_running():
         reset_needed = True
     if my_world.is_playing():
         # The idea is to drive in a triangle
-        if i >= 0 and i < 80:
+        if i >= 0 and i < 10:
             # X1
-            base_command = np.array([4, 0, 0])
-        elif i >= 80 and i < 130:
+            base_command = np.array([6, 0, 0])
+        elif i >= 10 and i < 20:
             # X2
-            base_command = np.array([2, 4, 0])
-        elif i >= 130 and i < 200:
+            base_command = np.array([3, 6, 0])
+        elif i >= 20 and i < 30:
             # X3
             base_command = np.array([0, 0, 0])
-        elif i == 200:
+        elif i == 30:
             i = 0
         i += 1
 

@@ -85,6 +85,12 @@ class LeatherbackPolicy(PolicyController):
         _steering_state
 
         """
+        """Multiplier for the throttle velocity. The action is in the range [-1, 1] and the radius of the wheel is 0.06m"""
+        throttle_scale = 1 # when set to 2 it trains but the cars are flying, 3 you get NaNs
+        throttle_max = 50.0 # throttle_max = 60.0
+        """Multiplier for the steering position. The action is in the range [-1, 1]"""
+        steering_scale = 0.1 # steering_scale = math.pi / 4.0
+        steering_max = 0.75
         # this is using the articulation type 
         # from isaacsim.core.prims import SingleArticulation
         # self.robot = SingleArticulation(prim_path=prim_path, name=name, position=position, orientation=orientation)
@@ -159,11 +165,13 @@ class LeatherbackPolicy(PolicyController):
         # Angular Velocity vZ
         obs[5:6] = ang_vel_b[2]
         # _throttle_state
-        obs[6:7] = self._previous_action[0]
+        _throttle_state = np.clip(self._previous_action[0]*throttle_scale, -throttle_max, throttle_max*0.1)
+        obs[6:7] = _throttle_state # self._previous_action[0]
         # _steering_state
+        _steering_state = np.clip(self._previous_action[1]*steering_scale, -steering_max, steering_max)
         # which joint is steering and will this return the right value ?
         # current_joint_pos = self.robot.get_joint_positions()
-        obs[7:] = self._previous_action[1]
+        obs[7:] = _steering_state # self._previous_action[1]
 
         return obs
 
@@ -178,6 +186,17 @@ class LeatherbackPolicy(PolicyController):
         """
         if self._policy_counter % self._decimation == 0:
             obs = self._compute_observation(command)
+            print(command)
+            print(obs)
+            # OBS seems to break
+            # position error --- heading error cos --- heading error sin --- lin_vel_b[0] --- lin_vel_b[1] --- ang_vel_b[2] --- self._previous_action[0] --- self._previous_action[1]
+            # [ 7.57492982e-01   9.96917751e-01        -7.84537909e-02       -6.99431277e-02   6.90974605e-02  -2.61267261e-01   1.55072185e+38              -9.56584456e+37]
+            # [ 7.58240120e-01   9.96939708e-01        -7.81742774e-02       -1.11453097e-01   8.80881350e-02  -7.66448655e-02  -1.00593186e+38              -3.73941588e+37]
+            # [ 7.58969851e-01   9.96992158e-01        -7.75025014e-02       -6.50709892e-02   6.43599708e-02  -1.67272045e-01   1.85874127e+38              -1.14659047e+38]
+            # [ 0.75940517       0.99705876            -0.07664085           -0.03655013       0.02604141      -0.13793788              nan                      nan        ]
+            # [ 0.75956611       0.99711188            -0.07594663           -0.00272253      -0.00207537      -0.13825043              nan                      nan        ]
+            # [ 0.75939462       0.99725618            -0.07402772            0.03912768      -0.0289128       -0.19934663              nan                      nan        ]
+
             self.action, self.actions = self._compute_action(obs)
             self.repeated_arr = np.repeat(self.action, [4, 2])
             self._previous_action = self.action.copy()
@@ -188,3 +207,8 @@ class LeatherbackPolicy(PolicyController):
         self.robot.apply_wheel_actions(self.actions)
 
         self._policy_counter += 1
+
+# What Observations should look like
+# [ 2.3575e+00, -9.0684e-01,  4.2147e-01, -2.9318e+00, -2.9587e-01, -1.7440e+00, -5.6743e+01,  2.4131e-01],
+# [ 1.5198e+00, -9.9900e-01,  4.4652e-02, -2.8026e+00, -5.7466e-03, -3.4900e-02, -5.4473e+01, -8.8691e-03],
+# [ 5.4997e-01, -9.9519e-01,  9.8003e-02, -2.8595e+00, -1.7253e-02, -1.6024e-01, -5.5117e+01,  2.6955e-02]], device='cuda:0')
