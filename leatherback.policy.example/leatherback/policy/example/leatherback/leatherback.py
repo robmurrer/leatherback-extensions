@@ -12,24 +12,8 @@ from leatherback.policy.example.controllers import PolicyController
 from isaacsim.storage.native import get_assets_root_path
 
 class LeatherbackPolicy(PolicyController):
-    """The Spot quadruped"""
-        # self,
-        # name: str,
-        # prim_path: str,
-        # root_path: Optional[str] = None,
-        # usd_path: Optional[str] = None,
-        # policy_path: Optional[str] = None,
-        # position: Optional[np.ndarray] = None,
-        # orientation: Optional[np.ndarray] = None,
-        # wheel_base: float = 32,
-        # track_width: float = 24,
-        # front_wheel_radius: float = 0.052,
-        # back_wheel_radius: float = 0.052,
-        # max_wheel_velocity: float = 20.0,
-        # invert_steering: bool = False,
-        # max_wheel_rotation_angle: float = 0.7854,
-        # max_acceleration: float = 1.0,
-        # max_steering_angle_velocity: float = 1.0,
+    """The Leatherback racer"""
+
     def __init__(
         self,
         prim_path: str,
@@ -39,15 +23,6 @@ class LeatherbackPolicy(PolicyController):
         policy_path: Optional[str] = None,
         position: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
-        # wheel_base: float = 32,
-        # track_width: float = 24,
-        # front_wheel_radius: float = 0.052,
-        # back_wheel_radius: float = 0.052,
-        # max_wheel_velocity: float = 20.0,
-        # invert_steering: bool = False,
-        # max_wheel_rotation_angle: float = 0.7854,
-        # max_acceleration: float = 1.0,
-        # max_steering_angle_velocity: float = 1.0,
     ) -> None:
         """
         Initialize robot and load RL policy.
@@ -69,9 +44,7 @@ class LeatherbackPolicy(PolicyController):
             print("File not found")
         
         super().__init__(name, prim_path, root_path, usd_path, policy_path, position, orientation)
-        # super().__init__(name, prim_path, root_path, usd_path, policy_path, position, orientation, 
-        #                  wheel_base, track_width, front_wheel_radius, back_wheel_radius, max_wheel_velocity, invert_steering, max_wheel_rotation_angle, max_acceleration, max_steering_angle_velocity)
-        # PolicyController.__init__(name, prim_path, root_path, usd_path, policy_path, position, orientation)
+
         if policy_path == None:
             # self.load_policy(
             #     assets_root_path + "/Isaac/Samples/Policies/Spot_Policies/spot_policy.pt",
@@ -85,7 +58,6 @@ class LeatherbackPolicy(PolicyController):
                 ) 
     
         self._action_scale = 1 # 0.2
-        # This is dependent on the Action Space Size
         # Leatherback has action space = 2
         self._previous_action = np.zeros(2)
         self._policy_counter = 0
@@ -127,11 +99,6 @@ class LeatherbackPolicy(PolicyController):
         ang_vel_b = np.matmul(R_BI, ang_vel_I)
         gravity_b = np.matmul(R_BI, np.array([0.0, 0.0, -1.0]))
 
-        # Notes from the isaaclab leatherback
-        # from isaaclab.assets import Articulation
-        # self.leatherback = Articulation(self.cfg.robot_cfg)
-        
-
         # region pos_error
         # Calculate the Position Error
         # current_target_positions = self._target_positions[self.leatherback._ALL_INDICES, self._target_index]
@@ -141,54 +108,9 @@ class LeatherbackPolicy(PolicyController):
         _position_error_vector = command - pos_IB
         _position_error = np.linalg.norm(_position_error_vector) # , axis=-1
         # _position_error = 0
-
         # end region pos_error
         # region heading_error
         # Calculate the Heading Error
-
-        # heading error in IsaacLab
-        # heading = self.leatherback.data.heading_w
-        # The heading_w function
-        # @property
-        # def heading_w(self):
-        #     """Yaw heading of the base frame (in radians). Shape is (num_instances,).
-
-        #     Note:
-        #         This quantity is computed by assuming that the forward-direction of the base
-        #         frame is along x-direction, i.e. :math:`(1, 0, 0)`.
-        #     """
-        #     forward_w = math_utils.quat_apply(self.root_link_quat_w, self.FORWARD_VEC_B)
-        #     return torch.atan2(forward_w[:, 1], forward_w[:, 0])
-
-        # Assuming the vector forward being the X vector
-        # self.FORWARD_VEC_B = torch.tensor((1.0, 0.0, 0.0), device=self.device).repeat(self._root_physx_view.count, 1)
-
-        # @torch.jit.script
-        # def quat_apply(quat: torch.Tensor, vec: torch.Tensor) -> torch.Tensor:
-        #     """Apply a quaternion rotation to a vector.
-
-        #     Args:
-        #         quat: The quaternion in (w, x, y, z). Shape is (..., 4).
-        #         vec: The vector in (x, y, z). Shape is (..., 3).
-
-        #     Returns:
-        #         The rotated vector in (x, y, z). Shape is (..., 3).
-        #     """
-        #     # store shape
-        #     shape = vec.shape
-        #     # reshape to (N, 3) for multiplication
-        #     quat = quat.reshape(-1, 4)
-        #     vec = vec.reshape(-1, 3)
-        #     # extract components from quaternions
-        #     xyz = quat[:, 1:]
-        #     t = xyz.cross(vec, dim=-1) * 2
-        #     return (vec + quat[:, 0:1] * t + xyz.cross(t, dim=-1)).view(shape)
-
-        # target_heading_w = torch.atan2(
-        #     self._target_positions[self.leatherback._ALL_INDICES, self._target_index, 1] - self.leatherback.data.root_link_pos_w[:, 1],
-        #     self._target_positions[self.leatherback._ALL_INDICES, self._target_index, 0] - self.leatherback.data.root_link_pos_w[:, 0],
-        # )
-        # np.arctan2(y_np, x_np)
         
         # FORWARD_VEC_B = torch.tensor((1.0, 0.0, 0.0), device=self.device).repeat(self._root_physx_view.count, 1)
         # Create FORWARD_VEC_B in NumPy
@@ -243,22 +165,6 @@ class LeatherbackPolicy(PolicyController):
         # current_joint_pos = self.robot.get_joint_positions()
         obs[7:] = self._previous_action[1]
 
-        # # Base lin vel
-        # obs[:3] = lin_vel_b
-        # # Base ang vel
-        # obs[3:6] = ang_vel_b
-        # # Gravity
-        # obs[6:9] = gravity_b
-        # # Command
-        # obs[9:12] = command
-        # # Joint states
-        # current_joint_pos = self.robot.get_joint_positions()
-        # current_joint_vel = self.robot.get_joint_velocities()
-        # obs[12:24] = current_joint_pos - self.default_pos
-        # obs[24:36] = current_joint_vel
-        # # Previous Action
-        # obs[36:48] = self._previous_action
-
         return obs
 
     def forward(self, dt, command):
@@ -275,35 +181,10 @@ class LeatherbackPolicy(PolicyController):
             self.action, self.actions = self._compute_action(obs)
             self.repeated_arr = np.repeat(self.action, [4, 2])
             self._previous_action = self.action.copy()
-        # ValueError: operands could not be broadcast together with shapes (6,) (2,)
-        # [Warning] [omni.kit.notification_manager.manager] PhysX error: PxArticulationJointReducedCoordinate::setDriveTarget() only supports target angle in range [-2Pi, 2Pi] for joints of type PxArticulationJointType::eREVOLUTE
         # action = ArticulationAction(joint_positions=self.default_pos + (self.repeated_arr * self._action_scale))
-
-        # action = ArticulationAction(
-        #     joint_velocities=(
-        #         # self.wheel_rotation_velocity_FL,
-        #         # self.wheel_rotation_velocity_FR,
-        #         # self.wheel_rotation_velocity_BL,
-        #         # self.wheel_rotation_velocity_BR,
-        #         self.repeated_arr[:4],
-        #     ),
-        #     joint_positions=(
-        #         # self.left_wheel_angle, 
-        #         # self.right_wheel_angle,
-        #         self.repeated_arr[-2:],
-        #         ),
-        # )
-
         # action = ArticulationAction(joint_velocities = self.actions.joint_velocities, joint_positions = self.actions.joint_positions)
         # self.robot.apply_action(action)
-        """Calculate right and left wheel angles and angular velocity of each wheel given steering angle and desired forward velocity.
 
-        Args:
-            command (np.ndarray): [desired steering angle (rad), steering_angle_velocity (rad/s), desired velocity of robot (m/s), acceleration (m/s^2), delta time (s)]
-
-        Returns:
-           self.actions = ArticulationAction: joint_velocities = [front left wheel, front right wheel, back left wheel, back right wheel]; joint_positions = [left wheel angle, right wheel angle]
-        """
         self.robot.apply_wheel_actions(self.actions)
 
         self._policy_counter += 1

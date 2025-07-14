@@ -42,23 +42,6 @@ class PolicyController(BaseController):
         robot (SingleArticulation): The robot articulation.
     """
 
-    """
-    AckermannController uses a bicycle model for Ackermann steering. The controller computes the left turning angle, right turning angle, and the rotation velocity of each wheel of a robot with no slip angle. The controller can be used to find the appropriate joint values of a wheeled robot with an Ackermann steering mechanism.
-
-    Args:
-
-        name (str):                          [description]
-        wheel_base (float):                  0.32   Distance between front and rear axles in m
-        track_width (float):                 0.24   Distance between left and right wheels of the robot in m
-        front_wheel_radius (float):          0.052  Radius of the front wheels of the robot in m. Defaults to 0.0 m but will equal back_wheel_radius if no value is inputted.
-        back_wheel_radius (float):           0.052  Radius of the back wheels of the robot in m. Defaults to 0.0 m but will equal front_wheel_radius if no value is inputted.
-        max_wheel_velocity (float):          20     Maximum angular velocity of the robot wheel in rad/s. Parameter is ignored if set to 0.0.
-        invert_steering (bool):              Set to true for rear wheel steering
-        max_wheel_rotation_angle (float):    0.7854 The maximum wheel steering angle for the steering wheels. Defaults to 6.28 rad. Parameter is ignored if set to 0.0.
-        max_acceleration (float):            1.0    The maximum magnitude of acceleration for the robot in m/s^2. Parameter is ignored if set to 0.0.
-        max_steering_angle_velocity (float): 1.0    The maximum magnitude of desired rate of change for steering angle in rad/s. Parameter is ignored if set to 0.0.
-    """
-
     def __init__(
         self,
         name: str,
@@ -68,35 +51,25 @@ class PolicyController(BaseController):
         policy_path: Optional[str] = None,
         position: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
-        # wheel_base: float = 32,
-        # track_width: float = 24,
-        # front_wheel_radius: float = 0.052,
-        # back_wheel_radius: float = 0.052,
-        # max_wheel_velocity: float = 20.0,
-        # invert_steering: bool = False,
-        # max_wheel_rotation_angle: float = 0.7854,
-        # max_acceleration: float = 1.0,
-        # max_steering_angle_velocity: float = 1.0,
     ) -> None:
-        # AckermannController.__init__(
-        #     self,
-        #     name = name,
-        #     wheel_base = wheel_base,
-        #     track_width = track_width,
-        #     front_wheel_radius = front_wheel_radius,
-        #     back_wheel_radius = back_wheel_radius,
-        #     max_wheel_velocity = max_wheel_velocity,
-        #     invert_steering = invert_steering,
-        #     max_wheel_rotation_angle = max_wheel_rotation_angle,
-        #     max_acceleration = max_acceleration,
-        #     max_steering_angle_velocity = max_steering_angle_velocity,
-        # )
-        # super().__init__(name, prim_path, root_path, usd_path, policy_path, position, orientation, 
-        #                  wheel_base, track_width, front_wheel_radius, back_wheel_radius, max_wheel_velocity, invert_steering, max_wheel_rotation_angle, max_acceleration, max_steering_angle_velocity)
-        # initialize the AckermannController, confusing MRO
-        # TypeError: AckermannController.__init__() got an unexpected keyword argument 'front_wheel_radius'
 
         prim = get_prim_at_path(prim_path)
+        """
+        AckermannController uses a bicycle model for Ackermann steering. The controller computes the left turning angle, right turning angle, and the rotation velocity of each wheel of a robot with no slip angle. The controller can be used to find the appropriate joint values of a wheeled robot with an Ackermann steering mechanism.
+
+        Args:
+
+            name (str):                          [description]
+            wheel_base (float):                  0.32   Distance between front and rear axles in m
+            track_width (float):                 0.24   Distance between left and right wheels of the robot in m
+            front_wheel_radius (float):          0.052  Radius of the front wheels of the robot in m. Defaults to 0.0 m but will equal back_wheel_radius if no value is inputted.
+            back_wheel_radius (float):           0.052  Radius of the back wheels of the robot in m. Defaults to 0.0 m but will equal front_wheel_radius if no value is inputted.
+            max_wheel_velocity (float):          20     Maximum angular velocity of the robot wheel in rad/s. Parameter is ignored if set to 0.0.
+            invert_steering (bool):              Set to true for rear wheel steering
+            max_wheel_rotation_angle (float):    0.7854 The maximum wheel steering angle for the steering wheels. Defaults to 6.28 rad. Parameter is ignored if set to 0.0.
+            max_acceleration (float):            1.0    The maximum magnitude of acceleration for the robot in m/s^2. Parameter is ignored if set to 0.0.
+            max_steering_angle_velocity (float): 1.0    The maximum magnitude of desired rate of change for steering angle in rad/s. Parameter is ignored if set to 0.0.
+        """
 
         wheel_base = 32
         track_width = 24
@@ -199,78 +172,6 @@ class PolicyController(BaseController):
 
         self._decimation, self._dt, self.render_interval = get_physics_properties(self.policy_env_params)
     
-    # region remove
-    # this is moved into the ackermann_robot.py
-    # def initialize(
-    #     self,
-    #     physics_sim_view: omni.physics.tensors.SimulationView = None,
-    #     effort_modes: str = "force",
-    #     control_mode: str = "velocity", # "position",
-    #     set_gains: bool = True,
-    #     set_limits: bool = True,
-    #     set_articulation_props: bool = True,
-    # ) -> None:
-    #     """
-    #     Initializes the robot and sets up the controller.
-
-    #     Args:
-    #         physics_sim_view (optional):             The physics simulation view.
-    #         effort_modes (str, optional):            The effort modes. Defaults to "force".
-    #         control_mode (str, optional):            The control mode. Defaults to "position".
-    #         set_gains (bool, optional):              Whether to set the joint gains. Defaults to True.
-    #         set_limits (bool, optional):             Whether to set the limits. Defaults to True.
-    #         set_articulation_props (bool, optional): Whether to set the articulation properties. Defaults to True.
-    #     """
-    #     self.robot.initialize(physics_sim_view=physics_sim_view)
-    #     self.robot.get_articulation_controller().set_effort_modes(effort_modes)
-    #     self.robot.get_articulation_controller().switch_control_mode(control_mode)
-    #     max_effort, max_vel, stiffness, damping, self.default_pos, self.default_vel = get_robot_joint_properties(
-    #         self.policy_env_params, self.robot.dof_names
-    #     )
-    #     if set_gains:
-    #         self.robot._articulation_view.set_gains(stiffness, damping)
-    #     if set_limits:
-    #         self.robot._articulation_view.set_max_efforts(max_effort)
-    #         self.robot._articulation_view.set_max_joint_velocities(max_vel)
-    #     if set_articulation_props:
-    #         self._set_articulation_props()
-    
-    # region review
-    # might not be necessary for the Ackermann Controler
-    # def _set_articulation_props(self) -> None:
-    #     """
-    #     Sets the articulation root properties from the policy environment parameters.
-    #     """
-    #     """
-    #     get_articulation_props(self.policy_env_params)
-    #     Gets the articulation properties from the environment configuration data.
-
-    #     Args:
-    #         data (dict): The environment configuration data.
-
-    #     Returns:
-    #         dict: The articulation properties.
-    #         data.get("robot_cfg").get("spawn").get("articulation_props")
-    #     """
-    #     articulation_prop = get_articulation_props(self.policy_env_params)
-
-    #     solver_position_iteration_count = articulation_prop.get("solver_position_iteration_count")
-    #     solver_velocity_iteration_count = articulation_prop.get("solver_velocity_iteration_count")
-    #     stabilization_threshold = articulation_prop.get("stabilization_threshold")
-    #     enabled_self_collisions = articulation_prop.get("enabled_self_collisions")
-    #     sleep_threshold = articulation_prop.get("sleep_threshold")
-
-    #     if solver_position_iteration_count not in [None, float("inf")]:
-    #         self.robot.set_solver_position_iteration_count(solver_position_iteration_count)
-    #     if solver_velocity_iteration_count not in [None, float("inf")]:
-    #         self.robot.set_solver_velocity_iteration_count(solver_velocity_iteration_count)
-    #     if stabilization_threshold not in [None, float("inf")]:
-    #         self.robot.set_stabilization_threshold(stabilization_threshold)
-    #     if isinstance(enabled_self_collisions, bool):
-    #         self.robot.set_enabled_self_collisions(enabled_self_collisions)
-    #     if sleep_threshold not in [None, float("inf")]:
-    #         self.robot.set_sleep_threshold(sleep_threshold)
-
     # This is general, it is getting the Observations and returning the inference output
     def _compute_action(self, obs: np.ndarray) -> np.ndarray:
         """
@@ -314,6 +215,16 @@ class PolicyController(BaseController):
         desired_forward_vel = action[0]
         desired_steering_angle = action[1]
         actions = self.controller.forward([desired_steering_angle, steering_velocity, desired_forward_vel, acceleration, dt])
+        # Seems to have numerical stability issues with the model
+        # action = [ throttle, steering ]
+        print(action)
+        # [ 1.5507218e+38 -9.5658446e+37]
+        # [-1.0059319e+38 -3.7394159e+37] 
+        # [ 1.8587413e+38 -1.1465905e+38]
+        print(actions) 
+        # {'joint_positions': (-0.6287975571457335, -0.7854), 'joint_velocities': (20.0, 20.0, 20.0, 12.499972450911129), 'joint_efforts': None}
+        # {'joint_positions': (-0.6287975571457335, -0.7854), 'joint_velocities': (-20.0, -20.0, -20.0, -12.499972450911129), 'joint_efforts': None}
+        # {'joint_positions': (-0.6287975571457335, -0.7854), 'joint_velocities': (20.0, 20.0, 20.0, 12.499972450911129), 'joint_efforts': None}
         return action, actions
 
     # These are implemented in the leatherback/leatherback.py
