@@ -13,7 +13,7 @@ import carb
 import numpy as np
 from isaacsim.core.api.robots.robot import Robot
 from isaacsim.core.utils.prims import define_prim, get_prim_at_path
-from isaacsim.core.utils.types import ArticulationAction
+from isaacsim.core.utils.types import ArticulationAction, ArticulationActions
 
 
 class AckermannRobot(Robot):
@@ -217,32 +217,61 @@ class AckermannRobot(Robot):
             )
         )
         """
-        actions_length = actions.get_length()
-        if actions_length is not None and actions_length != 4:#(self._num_wheel_dof + self._num_steering_dof):
+        # print(actions)
+        # actions_length = actions.get_length()
+        actions_length = self.get_size(actions)
+        # actions_length = [len(value) for value in actions.values()]
+        
+        print(actions_length)
+        if actions_length is not None and actions_length != (self._num_wheel_dof + self._num_steering_dof):# using get_length() should be 4 --- (self._num_wheel_dof + self._num_steering_dof):
             raise Exception("ArticulationAction passed should be the same length as the number of wheels")
-        joint_actions = ArticulationAction()
+        # joint_actions = ArticulationAction()
+        
         # TODO: The Steering, Throttle and Efforts must be inside a for loop. Can only send Apply Action to a specific joint type and its indices at a time.
-
+        # Actuators must be a dictionary where we have a joint type 
+        # {'joint_positions': [a list with the respective joint_indices], 'joint_velocities': [a list with the respective joint_indices], 'joint_efforts': None} 
+        # joint_velocities = [front left wheel, front right wheel, back left wheel, back right wheel]; 
+        # joint_positions = [left wheel angle, right wheel angle]
+        # for actuator in self.actuators.values():
+        #     # prepare input for actuator model based on cached data
+        #     # TODO : A tensor dict would be nice to do the indexing of all tensors together
+        #     if actions.joint_positions is not None:
+        #         joint_actions.joint_positions = np.zeros(self._num_steering_dof)
+        #         for i in range(len(actuator)): # self._num_steering_dof
+        steering_action = ArticulationAction(
+            joint_positions=actions.joint_positions,
+            joint_indices=self._steering_dof_indices,
+        )
+        throttle_action = ArticulationAction(
+            joint_velocities=actions.joint_velocities,
+            joint_indices=self._throttle_dof_indices,
+        )
+        self.apply_action(control_actions=steering_action)
+        self.apply_action(control_actions=throttle_action)
         
         # Steering
         # joint_actions.joint_positions[self._steering_dof_indices[i]] = actions.joint_positions[i]
         # IndexError: index 2 is out of bounds for axis 0 with size 2
         # joint_actions has variables like the joint_positions and joint_velocities, it is not giving the indices
-        if actions.joint_positions is not None: # must change this to only change the steering positions
-            joint_actions.joint_positions = np.zeros(self._num_steering_dof)  
-            print(actions) # {'joint_positions': (-0.6287975571457335, -0.7854), 'joint_velocities': (20.0, 20.0, 20.0, 12.499972450911129), 'joint_efforts': None}
-            print(self._steering_dof_indices) # [2, 3]
-            print(self._throttle_dof_indices) # [5, 4, 0, 1]
-            for i in range(self._num_steering_dof):  
-                # joint_actions.joint_positions[self._steering_dof_indices[i]] = actions.joint_positions[i]
-                # joint_actions.joint_indices[i] = self._steering_dof_indices[i]
-                joint_actions.joint_positions[i] = actions.joint_positions[i]
+        # if actions.joint_positions is not None: # must change this to only change the steering positions
+        #     joint_actions.joint_positions = np.zeros(self._num_steering_dof)  
+        #     # joint_actions.joint_indices = np.zeros(self._num_steering_dof)
+        #     for i in range(self._num_steering_dof):  
+        #         # joint_actions.joint_positions[self._steering_dof_indices[i]] = actions.joint_positions[i]
+        #         # joint_actions.joint_indices[i] = self._steering_dof_indices[i] # TypeError: 'NoneType' object does not support item assignment
+        #         joint_actions.joint_positions[i] = actions.joint_positions[i]
+        #         print(actions.joint_positions[i])
+        #         # self.apply_action(control_actions=joint_actions)
         # Throttle
-        if actions.joint_velocities is not None: # must change this to change only the throttle
-            joint_actions.joint_velocities = np.zeros(self._num_wheel_dof)
-            for i in range(self._num_wheel_dof):
-                # joint_actions.joint_velocities[self._throttle_dof_indices[i]] = actions.joint_velocities[i]
-                joint_actions.joint_velocities[i] = actions.joint_velocities[i]
+        # if actions.joint_velocities is not None: # must change this to change only the throttle
+        #     joint_actions.joint_velocities = np.zeros(self._num_wheel_dof)
+        #     # joint_actions.joint_indices = np.zeros(4)
+        #     for i in range(self._num_wheel_dof):
+        #         # joint_actions.joint_velocities[self._throttle_dof_indices[i]] = actions.joint_velocities[i]
+        #         # joint_actions.joint_indices[i] = self._throttle_dof_indices[i]
+        #         joint_actions.joint_velocities[i] = actions.joint_velocities[i]
+        #         print(actions.joint_velocities[i])
+        #         # self.apply_action(control_actions=joint_actions)
         # region review
         # might need remove
         # if actions.joint_efforts is not None:
@@ -251,7 +280,8 @@ class AckermannRobot(Robot):
         #         joint_actions.joint_efforts[self._wheel_dof_indices[i]] = actions.joint_efforts[i]
         
         # Apply all actions to the respective joints
-        self.apply_action(control_actions=joint_actions)
+        # print(joint_actions)
+        # self.apply_action(control_actions=joint_actions)
         return
 
     def initialize(self, physics_sim_view=None) -> None:
@@ -262,19 +292,36 @@ class AckermannRobot(Robot):
         """
         super().initialize(physics_sim_view=physics_sim_view)
         if self._throttle_dof_names is not None:
+            # self._throttle_dof_indices = [5, 4, 0, 1]
             self._throttle_dof_indices = [
                 self.get_dof_index(self._throttle_dof_names[i]) for i in range(len(self._throttle_dof_names))
             ]
+            # throttle_dof_names=[
+            #                     "Wheel__Knuckle__Front_Left", 
+            #                     "Wheel__Knuckle__Front_Right",
+            #                     "Wheel__Upright__Rear_Right",
+            #                     "Wheel__Upright__Rear_Left"
+            #                 ]
         if self._steering_dof_names is not None:
+            # self._steering_dof_indices = [2, 3]
             self._steering_dof_indices = [
                 self.get_dof_index(self._steering_dof_names[i]) for i in range(len(self._steering_dof_names))
             ]
+            # steering_dof_names=[
+            #                     "Knuckle__Upright__Front_Right",
+            #                     "Knuckle__Upright__Front_Left"
+            #                 ]
         elif self._throttle_dof_indices or self._steering_dof_indices is None:
             carb.log_error("need to have either joint names or joint indices")
 
         self._num_wheel_dof = len(self._throttle_dof_indices)
         self._num_steering_dof = len(self._steering_dof_indices)
-
+        # joint_velocities = [front left wheel, front right wheel, back left wheel, back right wheel]; 
+        # joint_positions = [left wheel angle, right wheel angle]
+        self.actuators = {
+            "joint_positions": self._steering_dof_indices,
+            "joint_velocities": self._throttle_dof_indices
+        }
         return
 
     def post_reset(self) -> None:
@@ -286,3 +333,33 @@ class AckermannRobot(Robot):
     # Confused about what this is useful for
     def get_articulation_controller_properties(self):
         return self._throttle_dof_names, self._steering_dof_names, self._steering_dof_indices, self._throttle_dof_indices
+    
+    def get_size(self, actions):
+        """[summary]
+
+        Returns:
+            Optional[int]: [description]
+        """
+        size = None
+        if actions.joint_positions is not None:
+            if size is None:
+                size = 0
+            if isinstance(actions.joint_positions, np.ndarray):
+                size += max(size, actions.joint_positions.shape[0])
+            else:
+                size += max(size, len(actions.joint_positions))
+        if actions.joint_velocities is not None:
+            if size is None:
+                size = 0
+            if isinstance(actions.joint_velocities, np.ndarray):
+                size += max(size, actions.joint_velocities.shape[0])
+            else:
+                size += max(size, len(actions.joint_velocities))
+        if actions.joint_efforts is not None:
+            if size is None:
+                size = 0
+            if isinstance(actions.joint_efforts, np.ndarray):
+                size += max(size, actions.joint_efforts.shape[0])
+            else:
+                size += max(size, len(actions.joint_efforts))
+        return size
