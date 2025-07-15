@@ -88,26 +88,10 @@ my_world.add_physics_callback("physics_step", callback_fn=on_physics_step)
 # robot command
 # The position of the waypoint in X , Y , Z
 base_command = np.zeros(3)
+base_command = np.array([10, 0, 0])
 
 i = 0
 while simulation_app.is_running():
     my_world.step(render=True)
-    if my_world.is_stopped():
-        reset_needed = True
-    if my_world.is_playing():
-        # base_command = np.array([10, 0, 0])
-        # The idea is to drive in a triangle
-        if i >= 0 and i < 600:
-            # X1
-            base_command = np.array([6, 0, 0])
-        elif i >= 600 and i < 1200:
-            # X2
-            base_command = np.array([3, 6, 0])
-        elif i >= 1200 and i < 1800:
-            # X3
-            base_command = np.array([0, 0, 0])
-        elif i == 1800:
-            i = 0
-        i += 1
 
 simulation_app.close()
