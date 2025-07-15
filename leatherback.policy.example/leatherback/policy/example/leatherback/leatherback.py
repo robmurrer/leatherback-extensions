@@ -87,7 +87,7 @@ class LeatherbackPolicy(PolicyController):
         """
         """Multiplier for the throttle velocity. The action is in the range [-1, 1] and the radius of the wheel is 0.06m"""
         throttle_scale = 1 # when set to 2 it trains but the cars are flying, 3 you get NaNs
-        throttle_max = 50.0 # throttle_max = 60.0
+        throttle_max = 5 #50.0 # throttle_max = 60.0
         """Multiplier for the steering position. The action is in the range [-1, 1]"""
         steering_scale = 0.1 # steering_scale = math.pi / 4.0
         steering_max = 0.75
@@ -165,10 +165,12 @@ class LeatherbackPolicy(PolicyController):
         # Angular Velocity vZ
         obs[5:6] = ang_vel_b[2]
         # _throttle_state
-        _throttle_state = np.clip(self._previous_action[0]*throttle_scale, -throttle_max, throttle_max*0.1)
+        throttle_action = self._previous_action[0]*throttle_scale
+        _throttle_state = np.clip(throttle_action, -throttle_max, throttle_max*0.1)
         obs[6:7] = _throttle_state # self._previous_action[0]
         # _steering_state
-        _steering_state = np.clip(self._previous_action[1]*steering_scale, -steering_max, steering_max)
+        steering_action = self._previous_action[1]*steering_scale
+        _steering_state = np.clip(steering_action, -steering_max, steering_max)
         # which joint is steering and will this return the right value ?
         # current_joint_pos = self.robot.get_joint_positions()
         obs[7:] = _steering_state # self._previous_action[1]
@@ -198,6 +200,8 @@ class LeatherbackPolicy(PolicyController):
             # [ 0.75939462       0.99725618            -0.07402772            0.03912768      -0.0289128       -0.19934663              nan                      nan        ]
 
             self.action, self.actions = self._compute_action(obs)
+            print(self.action)
+            print(self.actions)
             self.repeated_arr = np.repeat(self.action, [4, 2])
             self._previous_action = self.action.copy()
         # action = ArticulationAction(joint_positions=self.default_pos + (self.repeated_arr * self._action_scale))

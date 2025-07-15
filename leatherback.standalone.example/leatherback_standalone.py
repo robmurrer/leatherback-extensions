@@ -51,7 +51,8 @@ def on_physics_step(step_size) -> None:
 
 
 # spawn world
-my_world = World(stage_units_in_meters=1.0, physics_dt=1 / 500, rendering_dt=1 / 50)
+# leatherback is configure for physics_dt = 1/60 the spot seems to be physics_dt=1 / 500,
+my_world = World(stage_units_in_meters=1.0, physics_dt=1 / 60, rendering_dt=1 / 50)
 assets_root_path = get_assets_root_path()
 if assets_root_path is None:
     carb.log_error("Could not find Isaac Sim assets folder")
@@ -94,17 +95,18 @@ while simulation_app.is_running():
     if my_world.is_stopped():
         reset_needed = True
     if my_world.is_playing():
+        # base_command = np.array([10, 0, 0])
         # The idea is to drive in a triangle
-        if i >= 0 and i < 10:
+        if i >= 0 and i < 600:
             # X1
             base_command = np.array([6, 0, 0])
-        elif i >= 10 and i < 20:
+        elif i >= 600 and i < 1200:
             # X2
             base_command = np.array([3, 6, 0])
-        elif i >= 20 and i < 30:
+        elif i >= 1200 and i < 1800:
             # X3
             base_command = np.array([0, 0, 0])
-        elif i == 30:
+        elif i == 1800:
             i = 0
         i += 1
 

@@ -6,6 +6,10 @@ The main idea is to create an workflow to validate models in IsaacSim with more 
 
 By no means this is a stable extension project but it can serve as a great reference for those that want to develop something similar.
 
+Big issues:
+matching the actions to the right scale
+Do not know if in IsaacLab it is using the Mean Actions 
+
 ## Installation
 
 **Step 1** - Go to the isaacsim root installation, (a.k.a where the python.sh is)

@@ -71,8 +71,8 @@ class PolicyController(BaseController):
             max_steering_angle_velocity (float): 1.0    The maximum magnitude of desired rate of change for steering angle in rad/s. Parameter is ignored if set to 0.0.
         """
 
-        wheel_base = 32
-        track_width = 24
+        wheel_base = 0.32
+        track_width = 0.24
         front_wheel_radius = 0.052
         back_wheel_radius = 0.052
         max_wheel_velocity = 20.0
@@ -197,6 +197,7 @@ class PolicyController(BaseController):
             obs = torch.from_numpy(obs).view(1, -1).float() # seems reduntant but I thought I had to mess with data types so left here
             ort_inputs = {self.session.get_inputs()[0].name: obs.numpy()}
             output_names = [output.name for output in self.session.get_outputs()]
+            # print("ONNX output names:", output_names) # output_names = actions
             outputs = self.session.run(output_names, ort_inputs)
             # Get output and flatten to 1D array like .view(-1).numpy()
             action = outputs[0].reshape(-1)
@@ -215,12 +216,12 @@ class PolicyController(BaseController):
         steering_velocity = 0.0  # rad/s
         dt = 0.0  # secs
         """Multiplier for the throttle velocity. The action is in the range [-1, 1] and the radius of the wheel is 0.06m"""
-        throttle_scale = 1 # when set to 2 it trains but the cars are flying, 3 you get NaNs
-        throttle_max = 50.0 # throttle_max = 60.0
+        throttle_scale = -1 # when set to 2 it trains but the cars are flying, 3 you get NaNs
+        throttle_max = 1 #50.0 # throttle_max = 60.0
         """Multiplier for the steering position. The action is in the range [-1, 1]"""
-        steering_scale = 0.1 # steering_scale = math.pi / 4.0
-        steering_max = 0.75
-        _throttle = np.clip(action[0]*throttle_scale, -throttle_max, throttle_max*0.1)
+        steering_scale = -0.1 # steering_scale = math.pi / 4.0
+        steering_max = 1 #0.75
+        _throttle = np.clip(action[0]*throttle_scale, -throttle_max, throttle_max*1)
         _steering = np.clip(action[1]*steering_scale, -steering_max, steering_max)
         desired_forward_vel = _throttle # action[0]
         desired_steering_angle = _steering  # action[1]
@@ -270,3 +271,37 @@ class PolicyController(BaseController):
     #     if torch.cuda.is_available():
     #         providers.insert(0, 'CUDAExecutionProvider')
     #     return onnxruntime.InferenceSession(model, providers=providers)
+
+# Example of Action output infered in the IsaacLab
+# tensor([[-0.3962, -1.3037],
+#         [-0.1407, -0.9968],
+#         [-0.8244, -1.1522],
+#         [-0.1197, -0.9371],
+#         [-1.1394, -0.9273],
+#         [-0.0451, -0.3066],
+#         [-1.2442, -0.8159],
+#         [-0.1452, -0.0019],
+#         [ 0.3477, -1.4767],
+#         [-0.8584, -0.9580],
+#         [-1.1288, -1.0830],
+#         [-0.3721, -1.1228],
+#         [-0.4400, -0.7223],
+#         [-0.7136, -1.2011],
+#         [ 0.1095, -1.0040],
+#         [-0.2148, -1.2605],
+#         [ 0.0581, -1.2969],
+#         [-0.0325, -1.1484],
+#         [-0.4180, -1.0050],
+#         [-0.9198,  0.8618],
+#         [-0.7571, -0.3145],
+#         [-0.4018, -1.0053],
+#         [-0.2364, -1.2836],
+#         [ 0.2598, -0.0577],
+#         [-0.1385, -1.2557],
+#         [-0.5968, -1.0217],
+#         [-1.3275, -0.5586],
+#         [-0.9985, -0.8774],
+#         [-0.9310, -0.4613],
+#         [ 0.3163, -1.3126],
+#         [ 0.3497, -0.9634],
+#         [-1.0368, -0.8549]], device='cuda:0')
