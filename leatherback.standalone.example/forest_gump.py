@@ -12,24 +12,27 @@ from isaacsim.core.utils.prims import define_prim, get_prim_at_path
 from leatherback.policy.example.leatherback import LeatherbackPolicy
 from isaacsim.storage.native import get_assets_root_path
 
-
-
 script_dir = os.path.dirname(__file__)
 relative_path = os.path.join("..", "leatherback")
 full_path = os.path.abspath(os.path.join(script_dir, relative_path))
 usd_path = os.path.abspath(os.path.join(full_path, "leatherback_simple_better.usd"))
 
 
-step_angle = np.pi / 180 * 30  # 5 degrees
-phys_i = 0
+import onnxruntime as rt
+policy_path = os.path.join(script_dir, "../leatherback/policy_agent.onnx")
+sess = rt.InferenceSession(policy_path)
+input_name = sess.get_inputs()[0].name
+label_name = sess.get_outputs()[0].name
+
+# pos_error, heading_error_cos, heading_error_sin, vel_x, vel_y, vel_z, omega_x, omega_y
 def on_physics_step(step_size) -> None:
-    global phys_i
-    global step_angle
-    phys_i += 1
-    if phys_i % 100 == 0:
-        step_angle = -step_angle  # reverse direction every 10 steps
-    robot_art.set_joint_positions([[0, 0, step_angle, -step_angle, 0, 0]])
-    
+    X_test = np.array([[-6, 0, 0, 1, 0, 0, 1, 0.5]])  # Example input 
+    pred_onx = sess.run([label_name], {input_name: X_test.astype(np.float32)})[0]
+    print(pred_onx)
+
+    #wheel_vel = 16
+    #robot_art.set_joint_velocities([[wheel_vel, wheel_vel, 0, 0, wheel_vel, wheel_vel]])
+    #robot_art.set_joint_positions([[0, 0, step_angle, -step_angle, 0, 0]])
 
 
 my_world = World(stage_units_in_meters=1.0, physics_dt=1 / 60, rendering_dt=1 / 50)
@@ -59,8 +62,6 @@ knuckle_fl = 'Knuckle__Upright__Front_Left'
 wheel_knuckle_fr = 'Wheel__Knuckle__Front_Right'
 wheel_knuckle_fl = 'Wheel__Knuckle__Front_Left'
 
-wheel_vel = 6
-robot_art.set_joint_velocities([[wheel_vel, wheel_vel, 0, 0, wheel_vel, wheel_vel]])
 
 my_world.add_physics_callback("physics_step", callback_fn=on_physics_step)
 
